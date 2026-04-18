@@ -1,0 +1,8 @@
+{
+  "name": "Postcard",
+  "description": "AI-powered visual assistant that helps users pose for photos and videos using an interactive floating overlay and real-time pose detection.",
+  "requestFramePermissions": [
+    "camera"
+  ],
+  "majorCapabilities": []
+}
