@@ -1,0 +1,51 @@
+name: Build Android APK
+
+on:
+  workflow_dispatch: # Mengaktifkan tombol Run manual
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Ambil Kode dari Repositori
+      uses: actions/checkout@v4
+
+    - name: Siapkan Node.js (Mesin Web)
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+
+    - name: Install Modul & Build Web
+      run: |
+        npm install
+        npm run build
+
+    - name: Pasang Capacitor (Pembungkus Android)
+      run: |
+        npm install @capacitor/core @capacitor/cli @capacitor/android
+        npx cap init Postcard com.azlannoor.postcard --web-dir dist
+        npx cap add android
+        
+    - name: Suntik Izin Kamera & Overlay
+      run: |
+        sed -i '/<application/i \    <uses-permission android:name="android.permission.CAMERA" />\n    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />' android/app/src/main/AndroidManifest.xml
+        npx cap sync android
+
+    - name: Siapkan Java SDK
+      uses: actions/setup-java@v4
+      with:
+        distribution: 'zulu'
+        java-version: '17'
+
+    - name: Mulai Kompilasi APK (Gradle)
+      run: |
+        cd android
+        chmod +x gradlew
+        ./gradlew assembleDebug
+
+    - name: Simpan File APK
+      uses: actions/upload-artifact@v4
+      with:
+        name: Postcard-App
+        path: android/app/build/outputs/apk/debug/app-debug.apk
